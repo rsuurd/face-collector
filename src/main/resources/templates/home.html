@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Face Collector</title>
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+</head>
+<body>
+<section class="section">
+	<div class="container">
+		<div class="columns is-centered">
+			<div class="column is-half">
+				<p>Face Collector let you automaticly have emojis of your own face on your discord server.</p>
+
+				<form th:action="@{/collect}" th:object="${request}" method="post">
+					<div class="field has-addons">
+						<div class="control is-expanded">
+							<input class="input" type="text"  th:field="*{streamer}" placeholder="Twitch streamer name">
+						</div>
+						<div class="control">
+							<input type="submit" class="button is-info" value="Start collecting">
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</section>
+</body>
+</html>
