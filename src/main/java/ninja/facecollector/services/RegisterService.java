@@ -49,7 +49,7 @@ public class RegisterService {
 		if (redisTemplate.hasKey(registrationId)) {
 			String streamer = redisTemplate.opsForValue().get(registrationId);
 
-			redisTemplate.boundListOps(STREAMER_PREFIX.concat(streamer)).rightPush(guildId);
+			redisTemplate.boundSetOps(STREAMER_PREFIX.concat(streamer)).add(guildId);
 			redisTemplate.delete(registrationId);
 
 			log.info("Faces collected from {} will be sent to {}", streamer, guildId);

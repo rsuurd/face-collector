@@ -1,5 +1,6 @@
 package ninja.facecollector.services;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -18,6 +19,7 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
+@Slf4j
 @Service
 public class DiscordService {
 	private RestOperations restOperations;
@@ -42,7 +44,11 @@ public class DiscordService {
 		findEmojiId(name, guildId).ifPresent(emojiId ->
 			restOperations.exchange(BASE_URL + "/{emojiId}", DELETE, new HttpEntity<>(createHeaders()), Void.class, guildId, emojiId));
 
-		restOperations.exchange(BASE_URL, POST, new HttpEntity<>(emoji, createHeaders()), Void.class, guildId);
+		try {
+			restOperations.exchange(BASE_URL, POST, new HttpEntity<>(emoji, createHeaders()), Void.class, guildId);
+		} catch (Exception exception) {
+			log.error("{}'s emoji publication to {} failed", name, guildId, exception);
+		}
 	}
 
 	private Optional<String> findEmojiId(String name, String guildId) {

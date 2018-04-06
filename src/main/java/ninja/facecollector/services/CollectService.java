@@ -2,7 +2,6 @@ package ninja.facecollector.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.Set;
 
 import static ninja.facecollector.FaceCollector.STREAMER_PREFIX;
@@ -42,10 +40,9 @@ public class CollectService {
 		Set<String> streamers = redisTemplate.keys(STREAMER_PREFIX.concat("*"));
 
 		streamers.forEach(streamer -> {
-			BoundListOperations<String, String> boundListOps = redisTemplate.boundListOps(streamer);
 
 			String name = streamer.substring(STREAMER_PREFIX.length());
-			List<String> guildIds = boundListOps.range(0, boundListOps.size());
+			Set<String> guildIds = redisTemplate.boundSetOps(streamer).members();
 
 			log.info("collect {}'s face and push to {}", name, guildIds);
 
