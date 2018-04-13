@@ -44,6 +44,8 @@ public class TwitchService {
 		try {
 			stream = restOperations.exchange(url, GET, new HttpEntity<>(headers), StreamResponse.class).getBody().getStream();
 		} catch (Exception exception) {
+			log.warn("could not get stream", exception);
+			
 			stream = null;
 		}
 
