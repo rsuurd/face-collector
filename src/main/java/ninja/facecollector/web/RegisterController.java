@@ -38,7 +38,7 @@ public class RegisterController {
 		return "home";
 	}
 
-	@PostMapping("/collect")
+	@PostMapping("/")
 	public String collect(@Valid @ModelAttribute("request") CollectRequest request, BindingResult bindingResult) {
 		String view;
 
@@ -71,6 +71,7 @@ public class RegisterController {
 	@Data
 	private static class CollectRequest {
 		@NotNull
+		@Streamer
 		private String streamer;
 	}
 }

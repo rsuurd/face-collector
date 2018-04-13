@@ -17,7 +17,7 @@
 				<h2 class="subtitle">Face Collector let you automatically have emojis of a streamer's face on your discord server. 😎</h2>
 
 				<div class="box">
-					<form th:action="@{/collect}" th:object="${request}" method="post">
+					<form th:action="@{/}" th:object="${request}" method="post">
 						<div class="field is-grouped">
 							<div class="control is-expanded">
 								<input class="input" type="text" th:field="*{streamer}" placeholder="Twitch streamer name" th:errorclass="is-danger">

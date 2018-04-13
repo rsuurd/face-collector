@@ -53,11 +53,9 @@ public class CollectService {
 	public void collect(String name, String... guildIds) {
 		log.info("collect {}'s face and push to {}", name, guildIds);
 
-		Optional<TwitchService.Stream> maybeStream = twitchService.getStream(name);
-
-		if (maybeStream.isPresent()) {
+		twitchService.getStream(name).ifPresent(stream -> {
 			try {
-				BufferedImage preview = ImageIO.read(getPreviewUrl(maybeStream.get()));
+				BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
 
 				Optional<BufferedImage> maybeFace = faceService.extractFace(preview);
 
@@ -81,9 +79,7 @@ public class CollectService {
 			} catch (Exception exception) {
 				log.error("could not collect {}'s face", name, exception);
 			}
-		} else {
-			log.warn("{} is offline", name);
-		}
+		});
 	}
 
 	private URL getPreviewUrl(TwitchService.Stream stream) throws MalformedURLException {

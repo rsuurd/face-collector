@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -45,11 +46,30 @@ public class TwitchService {
 			stream = restOperations.exchange(url, GET, new HttpEntity<>(headers), StreamResponse.class).getBody().getStream();
 		} catch (Exception exception) {
 			log.warn("could not get stream", exception);
-			
+
 			stream = null;
 		}
 
 		return Optional.ofNullable(stream);
+	}
+
+	public boolean userExists(String streamer) {
+		Objects.requireNonNull(streamer, "Streamer is required");
+
+		String url = String.join("/", "https://api.twitch.tv/kraken/channels", streamer);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Client-ID", clientId);
+
+		boolean exists;
+
+		try {
+			exists = restOperations.exchange(url, GET, new HttpEntity<>(headers), Map.class).getBody().containsKey("_id");
+		} catch (Exception exception) {
+			exists = false;
+		}
+
+		return exists;
 	}
 
 	@Getter
