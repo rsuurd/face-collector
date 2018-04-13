@@ -7,9 +7,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static java.net.URLEncoder.encode;
 import static ninja.facecollector.FaceCollector.STREAMER_PREFIX;
 
 @Slf4j
@@ -29,20 +31,22 @@ public class RegisterService {
 		this.redisTemplate = redisTemplate;
 	}
 
-	// Username: face collector#5950
-	// Token: NDMwNjcxMDIwODY5ODEyMjM0.DaT3Gg.X2ClAfCSHPJfyXfM-NyPPGV6sik
 	public String authorizeFaceCollector(String streamer) {
-		String registrationId = UUID.randomUUID().toString();
+		try {
+			String registrationId = UUID.randomUUID().toString();
 
-		redisTemplate.opsForValue().set(registrationId, streamer, 1, TimeUnit.DAYS);
+			redisTemplate.opsForValue().set(registrationId, streamer, 1, TimeUnit.DAYS);
 
-		return UriComponentsBuilder.fromUriString("https://discordapp.com/api/oauth2/authorize")
-			.queryParam("client_id", clientId)
-			.queryParam("permissions", 1073741824)
-			.queryParam("redirect_uri", String.join("/", baseUrl, "joined"))
-			.queryParam("response_type", "code")
-			.queryParam("state", registrationId)
-			.queryParam("scope", "bot").build().toString();
+			return UriComponentsBuilder.fromUriString("https://discordapp.com/api/oauth2/authorize")
+				.queryParam("client_id", clientId)
+				.queryParam("permissions", 1073741824)
+				.queryParam("redirect_uri", encode(String.join("/", baseUrl, "joined"), "UTF-8"))
+				.queryParam("response_type", "code")
+				.queryParam("state", registrationId)
+				.queryParam("scope", "bot").build().toString();
+		} catch (IOException exception) {
+			throw new RuntimeException("could not authorize");
+		}
 	}
 
 	public void registerGuildId(String registrationId, String guildId) {
