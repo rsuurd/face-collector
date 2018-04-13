@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -56,11 +57,13 @@ public class CollectService {
 			try {
 				BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
 
-				faceService.extractFace(preview).ifPresent(faceImage -> {
+				Optional<BufferedImage> maybeFace = faceService.extractFace(preview);
+
+				if (maybeFace.isPresent()) {
 					try {
 						ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-						ImageIO.write(faceImage, "png", out);
+						ImageIO.write(maybeFace.get(), "png", out);
 
 						byte[] data = out.toByteArray();
 
@@ -70,7 +73,9 @@ public class CollectService {
 					} catch (IOException exception) {
 						log.error("could not create emoji from {}'s face", name, exception);
 					}
-				});
+				} else {
+					log.info("could not extract a face for {}", name);
+				}
 			} catch (Exception exception) {
 				log.error("could not collect {}'s face", name, exception);
 			}
