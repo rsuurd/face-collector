@@ -2,6 +2,7 @@ package ninja.facecollector.web;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import ninja.facecollector.services.GiphyService;
 import ninja.facecollector.services.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -43,7 +44,6 @@ public class RegisterController {
 	@GetMapping("/joined")
 	@ResponseStatus(HttpStatus.OK)
 	public String joined(@RequestParam("state") String registrationId, @RequestParam("guild_id") String guildId) {
-
 		registerService.registerGuildId(registrationId, guildId);
 
 		return "success";
