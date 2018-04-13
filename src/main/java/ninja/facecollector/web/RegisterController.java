@@ -1,14 +1,14 @@
 package ninja.facecollector.web;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-import ninja.facecollector.services.GiphyService;
+import ninja.facecollector.services.CollectService;
 import ninja.facecollector.services.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -18,14 +18,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
-@Slf4j
 @Controller
 public class RegisterController {
+	private CollectService collectService;
 	private RegisterService registerService;
 
 	@Autowired
-	public RegisterController(RegisterService registerService) {
+	public RegisterController(CollectService collectService, RegisterService registerService) {
+		this.collectService = collectService;
 		this.registerService = registerService;
 	}
 
@@ -37,16 +39,28 @@ public class RegisterController {
 	}
 
 	@PostMapping("/collect")
-	public String collect(@Valid @ModelAttribute("request") CollectRequest request) {
-		return String.format("redirect:%s", registerService.authorizeFaceCollector(request.getStreamer()));
+	public String collect(@Valid @ModelAttribute("request") CollectRequest request, BindingResult bindingResult) {
+		String view;
+
+		if (bindingResult.hasErrors()) {
+			view = "home";
+		} else {
+			view = String.format("redirect:%s", registerService.authorizeFaceCollector(request.getStreamer()));
+		}
+
+		return view;
 	}
 
 	@GetMapping("/joined")
 	@ResponseStatus(HttpStatus.OK)
 	public String joined(@RequestParam("state") String registrationId, @RequestParam("guild_id") String guildId) {
-		registerService.registerGuildId(registrationId, guildId);
+		return registerService.findStreamerByRegistrationId(registrationId).map(streamer -> {
+			registerService.registerGuildId(registrationId, guildId);
 
-		return "success";
+			collectService.collect(streamer, guildId);
+
+			return "success";
+		}).orElseThrow(() -> new RuntimeException("No registration found"));
 	}
 
 	@InitBinder
@@ -56,6 +70,7 @@ public class RegisterController {
 
 	@Data
 	private static class CollectRequest {
+		@NotNull
 		private String streamer;
 	}
 }

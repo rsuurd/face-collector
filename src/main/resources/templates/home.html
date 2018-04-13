@@ -20,9 +20,11 @@
 					<form th:action="@{/collect}" th:object="${request}" method="post">
 						<div class="field is-grouped">
 							<div class="control is-expanded">
-								<input class="input" type="text" th:field="*{streamer}"
-									   placeholder="Twitch streamer name">
+								<input class="input" type="text" th:field="*{streamer}" placeholder="Twitch streamer name" th:errorclass="is-danger">
+
+								<p th:if="${#fields.hasErrors('streamer')}" th:errors="*{streamer}" class="help is-danger">This streamer is not found</p>
 							</div>
+
 							<div class="control">
 								<input type="submit" class="button is-primary" value="Start collecting">
 							</div>

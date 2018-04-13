@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -16,6 +17,7 @@ import java.util.Optional;
 
 import static org.springframework.http.HttpMethod.GET;
 
+@Slf4j
 @Service
 public class TwitchService {
 	private RestOperations restOperations;
@@ -37,7 +39,15 @@ public class TwitchService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Client-ID", clientId);
 
-		return Optional.ofNullable(restOperations.exchange(url, GET, new HttpEntity<>(headers), StreamResponse.class).getBody().getStream());
+		Stream stream;
+
+		try {
+			stream = restOperations.exchange(url, GET, new HttpEntity<>(headers), StreamResponse.class).getBody().getStream();
+		} catch (Exception exception) {
+			stream = null;
+		}
+
+		return Optional.ofNullable(stream);
 	}
 
 	@Getter

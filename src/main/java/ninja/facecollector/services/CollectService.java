@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static ninja.facecollector.FaceCollector.STREAMER_PREFIX;
 
@@ -46,29 +47,33 @@ public class CollectService {
 
 			log.info("collect {}'s face and push to {}", name, guildIds);
 
-			twitchService.getStream(name).ifPresent(stream -> {
-				try {
-					BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
+			collect(name, guildIds.toArray(new String[] {}));
+		});
+	}
 
-					faceService.extractFace(preview).ifPresent(faceImage -> {
-						try {
-							ByteArrayOutputStream out = new ByteArrayOutputStream();
+	public void collect(String name, String... guildIds) {
+		twitchService.getStream(name).ifPresent(stream -> {
+			try {
+				BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
 
-							ImageIO.write(faceImage, "png", out);
+				faceService.extractFace(preview).ifPresent(faceImage -> {
+					try {
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-							byte[] data = out.toByteArray();
+						ImageIO.write(faceImage, "png", out);
 
-							guildIds.forEach(guildId ->
-								discordService.publishEmoji(name, data, guildId)
-							);
-						} catch (IOException exception) {
-							log.error("could not create emoji from {}'s face", name, exception);
-						}
-					});
-				} catch (IOException exception) {
-					log.error("could not collect {}'s face", name, exception);
-				}
-			});
+						byte[] data = out.toByteArray();
+
+						Stream.of(guildIds).forEach(guildId ->
+							discordService.publishEmoji(name, data, guildId)
+						);
+					} catch (IOException exception) {
+						log.error("could not create emoji from {}'s face", name, exception);
+					}
+				});
+			} catch (Exception exception) {
+				log.error("could not collect {}'s face", name, exception);
+			}
 		});
 	}
 

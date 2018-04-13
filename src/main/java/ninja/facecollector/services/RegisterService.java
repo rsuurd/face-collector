@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,8 @@ public class RegisterService {
 	private String baseUrl;
 
 	private StringRedisTemplate redisTemplate;
+
+	private CollectService collectService;
 
 	@Autowired
 	public RegisterService(@Value("${discord.clientId}") String clientId, @Value("${baseUrl}") String baseUrl, StringRedisTemplate redisTemplate) {
@@ -50,15 +53,15 @@ public class RegisterService {
 	}
 
 	public void registerGuildId(String registrationId, String guildId) {
-		if (redisTemplate.hasKey(registrationId)) {
-			String streamer = redisTemplate.opsForValue().get(registrationId);
+		String streamer = findStreamerByRegistrationId(registrationId).orElseThrow(() -> new RuntimeException("No registration found"));
 
-			redisTemplate.boundSetOps(STREAMER_PREFIX.concat(streamer)).add(guildId);
-			redisTemplate.delete(registrationId);
+		redisTemplate.boundSetOps(STREAMER_PREFIX.concat(streamer)).add(guildId);
+		redisTemplate.delete(registrationId);
 
-			log.info("Faces collected from {} will be sent to {}", streamer, guildId);
-		} else {
-			throw new RuntimeException("No registration found");
-		}
+		log.info("Faces collected from {} will be sent to {}", streamer, guildId);
+	}
+
+	public Optional<String> findStreamerByRegistrationId(String registrationId) {
+		return (redisTemplate.hasKey(registrationId)) ? Optional.of(redisTemplate.opsForValue().get(registrationId)) : Optional.empty();
 	}
 }
