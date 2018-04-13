@@ -46,16 +46,18 @@ public class CollectService {
 			String name = streamer.substring(STREAMER_PREFIX.length());
 			Set<String> guildIds = redisTemplate.boundSetOps(streamer).members();
 
-			log.info("collect {}'s face and push to {}", name, guildIds);
-
 			collect(name, guildIds.toArray(new String[] {}));
 		});
 	}
 
 	public void collect(String name, String... guildIds) {
-		twitchService.getStream(name).ifPresent(stream -> {
+		log.info("collect {}'s face and push to {}", name, guildIds);
+
+		Optional<TwitchService.Stream> maybeStream = twitchService.getStream(name);
+
+		if (maybeStream.isPresent()) {
 			try {
-				BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
+				BufferedImage preview = ImageIO.read(getPreviewUrl(maybeStream.get()));
 
 				Optional<BufferedImage> maybeFace = faceService.extractFace(preview);
 
@@ -74,12 +76,14 @@ public class CollectService {
 						log.error("could not create emoji from {}'s face", name, exception);
 					}
 				} else {
-					log.info("could not extract a face for {}", name);
+					log.warn("could not extract a face for {}", name);
 				}
 			} catch (Exception exception) {
 				log.error("could not collect {}'s face", name, exception);
 			}
-		});
+		} else {
+			log.warn("{} is offline", name);
+		}
 	}
 
 	private URL getPreviewUrl(TwitchService.Stream stream) throws MalformedURLException {
