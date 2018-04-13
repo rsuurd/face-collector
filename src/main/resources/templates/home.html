@@ -6,24 +6,30 @@
 	<title>Face Collector</title>
 
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+	<link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
-<section class="section">
-	<div class="container">
-		<div class="columns is-centered">
-			<div class="column is-half">
-				<p>Face Collector let you automatically have emojis of a streamer's face on your discord server. 😎</p>
+<section class="hero is-info is-fullheight">
+	<div class="hero-body">
+		<div class="container has-text-centered">
+			<div class="column is-6 is-offset-3">
+				<h1 class="title">Face Collector</h1>
 
-				<form th:action="@{/collect}" th:object="${request}" method="post">
-					<div class="field has-addons">
-						<div class="control is-expanded">
-							<input class="input" type="text"  th:field="*{streamer}" placeholder="Twitch streamer name">
+				<h2 class="subtitle">Face Collector let you automatically have emojis of a streamer's face on your discord server. 😎</h2>
+
+				<div class="box">
+					<form th:action="@{/collect}" th:object="${request}" method="post">
+						<div class="field is-grouped">
+							<div class="control is-expanded">
+								<input class="input" type="text" th:field="*{streamer}"
+									   placeholder="Twitch streamer name">
+							</div>
+							<div class="control">
+								<input type="submit" class="button is-primary" value="Start collecting">
+							</div>
 						</div>
-						<div class="control">
-							<input type="submit" class="button is-info" value="Start collecting">
-						</div>
-					</div>
-				</form>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>

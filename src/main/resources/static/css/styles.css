@@ -1,0 +1,8 @@
+html,body {
+	font-family: 'Open Sans', serif;
+}
+
+.hero .subtitle {
+	padding: 3rem 0;
+	line-height: 1.5;
+}
