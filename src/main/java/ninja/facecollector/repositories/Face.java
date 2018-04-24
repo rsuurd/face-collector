@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Set;
@@ -21,7 +22,7 @@ public class Face {
 	@Id
 	private String streamer;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.EAGER)
 	private Set<String> guildIds;
 
 	public Face(String streamer, String... guildIds) {
