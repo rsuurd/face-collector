@@ -1,8 +1,8 @@
 package ninja.facecollector.services;
 
 import lombok.extern.slf4j.Slf4j;
+import ninja.facecollector.repositories.FaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -14,10 +14,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
-
-import static ninja.facecollector.FaceCollector.STREAMER_PREFIX;
 
 @Slf4j
 @Service
@@ -26,59 +23,52 @@ public class CollectService {
 	private FaceService faceService;
 	private TwitchService twitchService;
 
-	private StringRedisTemplate redisTemplate;
+	private FaceRepository faceRepository;
 
 	@Autowired
-	public CollectService(DiscordService discordService, FaceService faceService, TwitchService twitchService, StringRedisTemplate redisTemplate) {
+	public CollectService(DiscordService discordService, FaceService faceService, TwitchService twitchService, FaceRepository faceRepository) {
 		this.discordService = discordService;
 		this.faceService = faceService;
 		this.twitchService = twitchService;
 
-		this.redisTemplate = redisTemplate;
+		this.faceRepository = faceRepository;
 	}
 	
 	@Scheduled(fixedRate = 300000L)
 	public void collect() {
-		Set<String> streamers = redisTemplate.keys(STREAMER_PREFIX.concat("*"));
+		faceRepository.findAll().forEach(face -> {
+			String name = face.getStreamer();
+			String[] guildIds = face.getGuildIds().toArray(new String[] {});
 
-		streamers.forEach(streamer -> {
+			log.info("collect {}'s face and push to {}", name, guildIds);
 
-			String name = streamer.substring(STREAMER_PREFIX.length());
-			Set<String> guildIds = redisTemplate.boundSetOps(streamer).members();
+			twitchService.getStream(name).ifPresent(stream -> {
+				try {
+					BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
 
-			collect(name, guildIds.toArray(new String[] {}));
-		});
-	}
+					Optional<BufferedImage> maybeFace = faceService.extractFace(preview);
 
-	public void collect(String name, String... guildIds) {
-		log.info("collect {}'s face and push to {}", name, guildIds);
+					if (maybeFace.isPresent()) {
+						try {
+							ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		twitchService.getStream(name).ifPresent(stream -> {
-			try {
-				BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
+							ImageIO.write(maybeFace.get(), "png", out);
 
-				Optional<BufferedImage> maybeFace = faceService.extractFace(preview);
+							byte[] data = out.toByteArray();
 
-				if (maybeFace.isPresent()) {
-					try {
-						ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-						ImageIO.write(maybeFace.get(), "png", out);
-
-						byte[] data = out.toByteArray();
-
-						Stream.of(guildIds).forEach(guildId ->
-							discordService.publishEmoji(name, data, guildId)
-						);
-					} catch (IOException exception) {
-						log.error("could not create emoji from {}'s face", name, exception);
+							Stream.of(guildIds).forEach(guildId ->
+								discordService.publishEmoji(name, data, guildId)
+							);
+						} catch (IOException exception) {
+							log.error("could not create emoji from {}'s face", name, exception);
+						}
+					} else {
+						log.warn("could not extract a face for {}", name);
 					}
-				} else {
-					log.warn("could not extract a face for {}", name);
+				} catch (Exception exception) {
+					log.error("could not collect {}'s face", name, exception);
 				}
-			} catch (Exception exception) {
-				log.error("could not collect {}'s face", name, exception);
-			}
+			});
 		});
 	}
 

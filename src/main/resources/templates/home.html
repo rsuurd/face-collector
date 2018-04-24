@@ -1,39 +1,129 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Face Collector</title>
 
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+	<link rel="stylesheet" th:href="@{/css/styles.css}">
+
+	<script defer th:src="@{/js/home.js}"></script>
 </head>
 <body>
-<section class="hero is-info is-fullheight">
-	<div class="hero-body">
+	<nav class="navbar has-shadow">
+		<div class="navbar-menu">
+			<div class="navbar-end">
+				<div class="navbar-item">
+					<div class="field">
+						<p class="control">
+							<a class="button is-warning" th:href="${#discord.getAddBotUri()}"><strong>Add Face Collector to your server(s).</strong></a>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<section class="section">
 		<div class="container has-text-centered">
 			<div class="column is-6 is-offset-3">
 				<h1 class="title">Face Collector</h1>
 
 				<h2 class="subtitle">Face Collector let you automatically have emojis of a streamer's face on your discord server. 😎</h2>
 
-				<div class="box">
-					<form th:action="@{/}" th:object="${request}" method="post">
-						<div class="field is-grouped">
-							<div class="control is-expanded">
-								<input class="input" type="text" th:field="*{streamer}" placeholder="Twitch streamer name" th:errorclass="is-danger">
+				<div sec:authorize="isAuthenticated()">
+					<div class="box">
+						<article class="media">
+							<figure class="media-left">
+								<p class="image is-64x64">
+									<img th:src="@{https://cdn.discordapp.com/avatars/{userId}/{avatar}.png(userId=${user.id}, avatar=${user.avatar})}">
+								</p>
+							</figure>
+							<div class="media-content">
+								<div class="content">
+									<p>
+										<strong th:text="${#authentication.name}">Nitro</strong>
+										<br>
+										Your owned servers:
+									</p>
+								</div>
 
-								<p th:if="${#fields.hasErrors('streamer')}" th:errors="*{streamer}" class="help is-danger">This streamer is not found</p>
+								<article id="streamers" class="media" th:each="guildWithStreamers : ${streamers}" th:fragment="streamers">
+									<th:block th:with="guild=${guildWithStreamers.key}">
+										<figure class="media-left" th:if="${not #strings.isEmpty(guild.icon)}">
+											<p class="image is-48x48">
+												<img th:src="@{https://cdn.discordapp.com/icons/{guildId}/{icon}.png(guildId=${guild.id}, icon=${guild.icon})}">
+											</p>
+										</figure>
+										<div class="media-content">
+											<div>
+												<p>
+													<strong th:text="${guild.name}">Entmoot</strong>
+
+													<br>
+
+													<ul th:if="${not #lists.isEmpty(guildWithStreamers.value)}">
+														<li th:each="streamer : ${guildWithStreamers.value}"><span th:text="${streamer}">Naguura</span> <a class="delete is-pulled-right" th:data-delete-url="@{/streamers/{guildId}/{streamer}(guildId=${guild.id}, streamer=${streamer})}"></a></li>
+
+													</ul>
+
+													<span th:if="${#lists.isEmpty(guildWithStreamers.value)}" class="has-text-warning">No faces are being collected.</span>
+												</p>
+											</div>
+										</div>
+									</th:block>
+								</article>
+							</div>
+						</article>
+					</div>
+
+					<div class="box">
+						<h1 class="title">Collect a face</h1>
+
+						<form th:action="@{/}" th:object="${request}" method="post">
+							<div th:if="${#fields.hasGlobalErrors()}" class="notification is-danger">
+								<p th:each="error : ${#fields.globalErrors()}" th:text="${error}">...</p>
+							</div>
+
+							<div class="field">
+								<div class="control">
+									<div class="select">
+										<select th:field="*{guildId}" th:errorclass="is-danger">
+											<option value="">Select Discord server...</option>
+
+											<option th:each="entry : ${streamers}" th:value="${entry.key.id}" th:text="${entry.key.name}">Entmoot</option>
+										</select>
+									</div>
+
+									<p th:if="${#fields.hasErrors('guildId')}" th:errors="*{guildId}" class="help is-danger">Select a server</p>
+								</div>
+							</div>
+
+							<div class="field">
+								<div class="control is-expanded">
+									<input class="input" type="text" th:field="*{streamer}" placeholder="Twitch streamer name" th:errorclass="is-danger">
+
+									<p th:if="${#fields.hasErrors('streamer')}" th:errors="*{streamer}" class="help is-danger">This streamer is not found</p>
+								</div>
 							</div>
 
 							<div class="control">
 								<input type="submit" class="button is-primary" value="Start collecting">
 							</div>
-						</div>
-					</form>
+						</form>
+					</div>
+				</div>
+
+				<div sec:authorize="isAnonymous()">
+					<div class="box">
+						<p class="is-size-4">Log in with Discord to start collecting</p>
+
+						<a class="button is-blurple" th:href="@{/oauth2/authorization/discord}">Login</a>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-</section>
+	</section>
 </body>
 </html>

@@ -1,0 +1,22 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      client:
+        registration:
+          discord:
+            clientAuthenticationMethod: post
+            authorizationGrantType: authorization_code
+            scope:
+              - guilds
+              - identify
+            redirectUriTemplate: "{baseUrl}/login/oauth2/code/discord"
+            clientName: Face Collector
+        provider:
+          discord:
+            authorizationUri: https://discordapp.com/api/oauth2/authorize
+            tokenUri: https://discordapp.com/api/oauth2/token
+            userInfoUri: https://discordapp.com/api/users/@me
+            usernameAttribute: username
