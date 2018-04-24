@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -37,38 +37,41 @@ public class CollectService {
 	@Scheduled(fixedRate = 300000L)
 	public void collect() {
 		faceRepository.findAll().forEach(face -> {
-			String name = face.getStreamer();
-			String[] guildIds = face.getGuildIds().toArray(new String[] {});
+			if (!face.getGuildIds().isEmpty()) {
+				collect(face.getStreamer(), face.getGuildIds());
+			}
+		});
+	}
 
-			log.info("collect {}'s face and push to {}", name, guildIds);
+	public void collect(String name, Set<String> guildIds) {
+		log.info("collect {}'s face and push to {}", name, guildIds);
 
-			twitchService.getStream(name).ifPresent(stream -> {
-				try {
-					BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
+		twitchService.getStream(name).ifPresent(stream -> {
+			try {
+				BufferedImage preview = ImageIO.read(getPreviewUrl(stream));
 
-					Optional<BufferedImage> maybeFace = faceService.extractFace(preview);
+				Optional<BufferedImage> maybeFace = faceService.extractFace(preview);
 
-					if (maybeFace.isPresent()) {
-						try {
-							ByteArrayOutputStream out = new ByteArrayOutputStream();
+				if (maybeFace.isPresent()) {
+					try {
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-							ImageIO.write(maybeFace.get(), "png", out);
+						ImageIO.write(maybeFace.get(), "png", out);
 
-							byte[] data = out.toByteArray();
+						byte[] data = out.toByteArray();
 
-							Stream.of(guildIds).forEach(guildId ->
-								discordService.publishEmoji(name, data, guildId)
-							);
-						} catch (IOException exception) {
-							log.error("could not create emoji from {}'s face", name, exception);
-						}
-					} else {
-						log.warn("could not extract a face for {}", name);
+						guildIds.forEach(guildId ->
+							discordService.publishEmoji(name, data, guildId)
+						);
+					} catch (IOException exception) {
+						log.error("could not create emoji from {}'s face", name, exception);
 					}
-				} catch (Exception exception) {
-					log.error("could not collect {}'s face", name, exception);
+				} else {
+					log.warn("could not extract a face for {}", name);
 				}
-			});
+			} catch (Exception exception) {
+				log.error("could not collect {}'s face", name, exception);
+			}
 		});
 	}
 

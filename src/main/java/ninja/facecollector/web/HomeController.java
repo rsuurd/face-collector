@@ -3,6 +3,7 @@ package ninja.facecollector.web;
 import lombok.Data;
 import ninja.facecollector.repositories.Face;
 import ninja.facecollector.repositories.FaceRepository;
+import ninja.facecollector.services.CollectService;
 import ninja.facecollector.services.DiscordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -24,22 +25,27 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.springframework.http.HttpStatus.OK;
 
 @Controller
 public class HomeController {
+	private CollectService collectService;
 	private DiscordService discordService;
 	private OAuth2AuthorizedClientService clientService;
 
 	private FaceRepository faceRepository;
 
 	@Autowired
-	public HomeController(DiscordService discordService, OAuth2AuthorizedClientService clientService, FaceRepository faceRepository) {
+	public HomeController(CollectService collectService, DiscordService discordService, OAuth2AuthorizedClientService clientService,
+						  FaceRepository faceRepository) {
+		this.collectService = collectService;
 		this.discordService = discordService;
 		this.clientService = clientService;
 
@@ -72,6 +78,9 @@ public class HomeController {
 		} else {
 			faceRepository.save(new Face(request.streamer, request.guildId));
 
+			CompletableFuture.runAsync(() ->
+				collectService.collect(request.streamer, Collections.singleton(request.guildId)));
+
 			view = "redirect:/";
 		}
 
@@ -85,7 +94,7 @@ public class HomeController {
 			face.getGuildIds().remove(guildId);
 
 			faceRepository.save(face);
-
+			discordService.deleteEmoji(face.getStreamer(), guildId);
 		});
 
 		getToken(token).ifPresent(tokenValue -> addStreamers(model, tokenValue));

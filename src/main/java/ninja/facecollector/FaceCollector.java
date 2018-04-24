@@ -8,6 +8,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @EnableCaching
 @EnableScheduling
 @SpringBootApplication

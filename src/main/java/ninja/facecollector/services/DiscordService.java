@@ -50,14 +50,20 @@ public class DiscordService {
 		emoji.put("name", name);
 		emoji.put("image", "data:image/png;base64," + Base64.getEncoder().encodeToString(data));
 
-		findEmojiId(name, guildId).ifPresent(emojiId ->
-			restOperations.exchange(EMOJI_URL + "/{emojiId}", DELETE, new HttpEntity<>(createBotHeaders()), Void.class, guildId, emojiId));
+		deleteEmoji(name, guildId);
 
 		try {
+
 			restOperations.exchange(EMOJI_URL, POST, new HttpEntity<>(emoji, createBotHeaders()), Void.class, guildId);
 		} catch (Exception exception) {
 			log.error("{}'s emoji publication to {} failed", name, guildId, exception);
 		}
+	}
+
+	public void deleteEmoji(String name, String guildId) {
+		findEmojiId(name, guildId).ifPresent(emojiId ->
+			restOperations.exchange(EMOJI_URL + "/{emojiId}", DELETE, new HttpEntity<>(createBotHeaders()), Void.class, guildId, emojiId));
+
 	}
 
 	private Optional<String> findEmojiId(String name, String guildId) {
