@@ -7,6 +7,7 @@ import org.openimaj.math.geometry.shape.Rectangle;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +22,7 @@ public class FaceService {
 	public Optional<BufferedImage> extractFace(BufferedImage image) {
 		List<DetectedFace> faces = detector.detectFaces(ImageUtilities.createFImage(image));
 
-		return faces.stream().findFirst().map(face -> {
+		return faces.stream().max(Comparator.comparing(DetectedFace::getConfidence)).map(face -> {
 			Rectangle faceBounds = face.getBounds();
 
 			return image.getSubimage((int) faceBounds.x, (int) faceBounds.y, (int) faceBounds.width, (int) faceBounds.height);
