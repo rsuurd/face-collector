@@ -1,4 +1,15 @@
+baseUrl: http://localhost:8080
+discord:
+  clientId: CLIENT_ID
+  token: SECRET
+twitch:
+  clientId: CLIENT_ID
+giphy:
+  token: SECRET
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/face-collector
+    username: postgres
   jpa:
     hibernate:
       ddl-auto: update
@@ -7,6 +18,8 @@ spring:
       client:
         registration:
           discord:
+            client-id: CLIENT_ID
+            client-secret: SECRET
             clientAuthenticationMethod: post
             authorizationGrantType: authorization_code
             scope:

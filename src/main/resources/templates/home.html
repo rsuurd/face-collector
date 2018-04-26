@@ -9,11 +9,27 @@
 	<link rel="stylesheet" th:href="@{/css/styles.css}">
 
 	<script defer th:src="@{/js/home.js}"></script>
+	<script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
 </head>
 <body>
 	<nav class="navbar has-shadow">
-		<div class="navbar-menu">
+		<div class="navbar-brand">
+			<a class="navbar-item is-hidden-desktop" href="https://github.com/rsuurd/face-collector" target="_blank">
+				<i class="fab fa-lg fa-github-alt"></i>
+			</a>
+
+			<div class="navbar-burger burger" data-target="menu">
+				<span></span>
+				<span></span>
+				<span></span>
+			</div>
+		</div>
+		<div id="menu" class="navbar-menu">
 			<div class="navbar-end">
+				<a class="navbar-item is-hidden-mobile" href="https://github.com/rsuurd/face-collector" target="_blank">
+					<i class="fab fa-lg fa-github-alt"></i>
+				</a>
+
 				<div class="navbar-item">
 					<div class="field">
 						<p class="control">
