@@ -76,7 +76,9 @@ public class HomeController {
 
 			view = "home";
 		} else {
-			faceRepository.save(new Face(request.streamer, request.guildId));
+			Face face = faceRepository.findById(request.streamer).orElse(new Face(request.streamer)).withGuildId(request.guildId);
+
+			faceRepository.save(face);
 
 			CompletableFuture.runAsync(() ->
 				collectService.collect(request.streamer, Collections.singleton(request.guildId)));
@@ -105,6 +107,12 @@ public class HomeController {
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
 		binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+		binder.registerCustomEditor(String.class, "streamer", new StringTrimmerEditor(true) {
+			@Override
+			public void setAsText(String text) {
+				super.setAsText(text.toLowerCase());
+			}
+		});
 	}
 
 	private Optional<String> getToken(OAuth2AuthenticationToken token) {
@@ -116,7 +124,7 @@ public class HomeController {
 	}
 
 	private void addAttributes(Model model, OAuth2AuthenticationToken token) {
-		getToken(token).ifPresent(tokenValue -> {;
+		getToken(token).ifPresent(tokenValue -> {
 			model.addAttribute("user", discordService.getUser(tokenValue));
 
 			addStreamers(model, tokenValue);

@@ -30,4 +30,10 @@ public class Face {
 
 		this.guildIds = Stream.of(guildIds).collect(Collectors.toSet());
 	}
+
+	public Face withGuildId(String guildId) {
+		guildIds.add(guildId);
+
+		return this;
+	}
 }

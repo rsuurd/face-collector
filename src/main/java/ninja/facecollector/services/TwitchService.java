@@ -2,6 +2,7 @@ package ninja.facecollector.services;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,11 +74,14 @@ public class TwitchService {
 	}
 
 	@Getter
-	private static class StreamResponse {
+	@AllArgsConstructor(access = AccessLevel.PACKAGE)
+	static class StreamResponse {
 		private Stream stream;
+
 	}
 
 	@Getter
+	@AllArgsConstructor(access = AccessLevel.PACKAGE)
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class Stream {
 		@JsonProperty("video_height")
@@ -85,26 +89,17 @@ public class TwitchService {
 
 		private Preview preview;
 
-		public Stream(int videoHeight, Preview preview) {
-			this.videoHeight = videoHeight;
-			this.preview = preview;
-		}
-
 		public int getVideoWidth() {
 			return (getVideoHeight() / 9) * 16;
 		}
 	}
 
 	@Getter
+	@AllArgsConstructor(access = AccessLevel.PACKAGE)
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class Preview {
 		private String large;
 		private String template;
-
-		public Preview(String large, String template) {
-			this.large = large;
-			this.template = template;
-		}
 	}
 }
 

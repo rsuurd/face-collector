@@ -41,6 +41,8 @@ dependencies {
     compile 'org.projectlombok:lombok:1.16.20'
 
     testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile 'org.assertj:assertj-core:3.9.1'
+    testRuntime 'com.h2database:h2:1.4.197'
 }
 
 bootRun {

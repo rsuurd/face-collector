@@ -16,7 +16,11 @@ public class FaceService {
 	private HaarCascadeDetector detector;
 
 	public FaceService() {
-		detector = new HaarCascadeDetector(40);
+		this(new HaarCascadeDetector(40));
+	}
+
+	FaceService(HaarCascadeDetector detector) {
+		this.detector = detector;
 	}
 
 	public Optional<BufferedImage> extractFace(BufferedImage image) {

@@ -45,6 +45,7 @@ public class DiscordService {
 	public void publishEmoji(String name, byte[] data, String guildId) {
 		Objects.requireNonNull(name, "Name is required");
 		Objects.requireNonNull(data, "Image is required");
+		Objects.requireNonNull(guildId, "Guild-ID is required");
 
 		Map<String, Object> emoji = new LinkedHashMap<>();
 		emoji.put("name", name);
@@ -53,7 +54,6 @@ public class DiscordService {
 		deleteEmoji(name, guildId);
 
 		try {
-
 			restOperations.exchange(EMOJI_URL, POST, new HttpEntity<>(emoji, createBotHeaders()), Void.class, guildId);
 		} catch (Exception exception) {
 			log.error("{}'s emoji publication to {} failed", name, guildId, exception);
@@ -61,12 +61,17 @@ public class DiscordService {
 	}
 
 	public void deleteEmoji(String name, String guildId) {
+		Objects.requireNonNull(name, "Name is required");
+		Objects.requireNonNull(guildId, "Guild-ID is required");
+
 		findEmojiId(name, guildId).ifPresent(emojiId ->
 			restOperations.exchange(EMOJI_URL + "/{emojiId}", DELETE, new HttpEntity<>(createBotHeaders()), Void.class, guildId, emojiId));
-
 	}
 
 	private Optional<String> findEmojiId(String name, String guildId) {
+		Objects.requireNonNull(name, "Name is required");
+		Objects.requireNonNull(guildId, "Guild-ID is required");
+
 		@SuppressWarnings("unchecked")
 		List<Map<String, Object>> emojis = restOperations.exchange(EMOJI_URL, GET, new HttpEntity<>(createBotHeaders()), List.class, guildId).getBody();
 
@@ -75,11 +80,15 @@ public class DiscordService {
 
 	@Cacheable("users")
 	public User getUser(String token) {
+		Objects.requireNonNull(token, "Access token required");
+
 		return restOperations.exchange(BASE_URL + "/users/@me", GET, new HttpEntity<>(createHeaders("Bearer", token)), User.class).getBody();
 	}
 
 	@Cacheable("guilds")
 	public List<Guild> listGuilds(String token) {
+		Objects.requireNonNull(token, "Access token required");
+
 		List<Guild> guilds = restOperations.exchange(BASE_URL + "/users/@me/guilds", GET, new HttpEntity<>(createHeaders("Bearer", token)), new ParameterizedTypeReference<List<Guild>>() {}).getBody();
 
 		return guilds.stream().filter(Guild::isOwner).collect(Collectors.toList());

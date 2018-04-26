@@ -1,7 +1,10 @@
 package ninja.facecollector.services;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -36,12 +39,16 @@ public class GiphyService {
 	}
 
 	@Getter
-	private static class GiphyResponse {
+	@AllArgsConstructor(access = AccessLevel.PACKAGE)
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	static class GiphyResponse {
 		private Data data;
 	}
 
 	@Getter
-	private static class Data {
+	@AllArgsConstructor(access = AccessLevel.PACKAGE)
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	static class Data {
 		@JsonProperty("embed_url")
 		private String embedUrl;
 	}

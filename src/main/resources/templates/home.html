@@ -102,7 +102,7 @@
 
 							<div class="field">
 								<div class="control is-expanded">
-									<input class="input" type="text" th:field="*{streamer}" placeholder="Twitch streamer name" th:errorclass="is-danger">
+									<input class="input is-lowercase" type="text" th:field="*{streamer}" placeholder="Twitch streamer name" th:errorclass="is-danger">
 
 									<p th:if="${#fields.hasErrors('streamer')}" th:errors="*{streamer}" class="help is-danger">This streamer is not found</p>
 								</div>
