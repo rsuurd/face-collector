@@ -23,7 +23,6 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
@@ -109,7 +108,6 @@ public class HomeControllerTest {
 			.andExpect(redirectedUrl("/"));
 
 		verify(faceRepository).save(new Face("streamer", "guildId"));
-		verify(collectService).collect("streamer", Collections.singleton("guildId"));
 	}
 
 	@Test
