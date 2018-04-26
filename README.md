@@ -1,5 +1,6 @@
 Face Collector
 ==============
+Face Collector tries to recognize faces in [Twitch](http://twitch.tv) streams and publishes those to [Discord](https://discordapp.com/) guilds.
 
 Database
 --------
