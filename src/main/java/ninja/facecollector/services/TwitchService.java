@@ -74,6 +74,7 @@ public class TwitchService {
 	}
 
 	@Getter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	@AllArgsConstructor(access = AccessLevel.PACKAGE)
 	static class StreamResponse {
 		private Stream stream;
